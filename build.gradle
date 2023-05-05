@@ -1,4 +1,9 @@
 plugins {
+    id 'java'
+    id 'application'
+    id 'org.javamodularity.moduleplugin' version '1.8.12'
+    id 'org.openjfx.javafxplugin' version '0.0.13'
+    id 'org.beryx.jlink' version '2.25.0'
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("io.micronaut.application") version "3.7.9"
     id("io.micronaut.aot") version "3.7.9"
@@ -19,16 +24,28 @@ dependencies {
     implementation("jakarta.annotation:jakarta.annotation-api")
     compileOnly("org.graalvm.nativeimage:svm")
     runtimeOnly("ch.qos.logback:logback-classic")
+
+    implementation 'com.google.zxing:javase:3.4.1'
+    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
+    implementation 'org.openjfx:javafx-controls:20'
+    implementation 'org.openjfx:javafx-fxml:20'
+    implementation 'org.openjfx:javafx-swing:20'
+    implementation 'org.controlsfx:controlsfx:11.1.2'
+    implementation 'org.kordamp.ikonli:ikonli-javafx:12.3.1'
+    implementation 'org.kordamp.bootstrapfx:bootstrapfx-core:0.4.0'
+
+
+
 }
 
 application {
     mainClass.set("com.smartbros.Application")
 }
 java {
-    sourceCompatibility = JavaVersion.toVersion("17")
-    targetCompatibility = JavaVersion.toVersion("17")
+    sourceCompatibility = JavaVersion.toVersion("20")
+    targetCompatibility = JavaVersion.toVersion("20")
 }
-
 graalvmNative.toolchainDetection = false
 micronaut {
     runtime("netty")
@@ -49,13 +66,20 @@ micronaut {
         optimizeNetty = true
     }
 }
-
-
-
 configurations.all {
     resolutionStrategy.dependencySubstitution {
         substitute(module("io.micronaut:micronaut-jackson-databind"))
-            .using(module("io.micronaut.serde:micronaut-serde-jackson:1.5.2"))
+                .using(module("io.micronaut.serde:micronaut-serde-jackson:1.5.2"))
     }
 }
-
+javafx {
+    version = '20'
+    modules = ['javafx.controls', 'javafx.fxml',  'javafx.swing' ]
+}
+application {
+    mainClass.set("com.smartbros.ServerGUI")
+    applicationDefaultJvmArgs = [
+            "--module-path", "${sourceSets.main.runtimeClasspath}",
+            "--add-modules", "javafx.controls,javafx.fxml"
+    ]
+}
