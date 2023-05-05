@@ -28,23 +28,20 @@ dependencies {
     implementation 'com.google.zxing:javase:3.4.1'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
-    implementation 'org.openjfx:javafx-controls:20'
-    implementation 'org.openjfx:javafx-fxml:20'
-    implementation 'org.openjfx:javafx-swing:20'
+    implementation 'org.openjfx:javafx-controls:17'
+    implementation 'org.openjfx:javafx-fxml:17'
+    implementation 'org.openjfx:javafx-swing:17'
     implementation 'org.controlsfx:controlsfx:11.1.2'
     implementation 'org.kordamp.ikonli:ikonli-javafx:12.3.1'
     implementation 'org.kordamp.bootstrapfx:bootstrapfx-core:0.4.0'
 
 
-
 }
 
-application {
-    mainClass.set("com.smartbros.Application")
-}
+//application { mainClass.set("com.smartbros.Application") }
 java {
-    sourceCompatibility = JavaVersion.toVersion("20")
-    targetCompatibility = JavaVersion.toVersion("20")
+    sourceCompatibility = JavaVersion.toVersion("17")
+    targetCompatibility = JavaVersion.toVersion("17")
 }
 graalvmNative.toolchainDetection = false
 micronaut {
@@ -73,13 +70,37 @@ configurations.all {
     }
 }
 javafx {
-    version = '20'
+    version = '17'
     modules = ['javafx.controls', 'javafx.fxml',  'javafx.swing' ]
 }
 application {
     mainClass.set("com.smartbros.ServerGUI")
+    println "UUU"
     applicationDefaultJvmArgs = [
             "--module-path", "${sourceSets.main.runtimeClasspath}",
-            "--add-modules", "javafx.controls,javafx.fxml"
+            "--add-modules", "javafx.controls,javafx.fxml,javafx.swing"
     ]
+}
+shadowJar {
+    archiveBaseName.set('YourAppName')
+    archiveVersion.set('0.1.0')
+    archiveClassifier.set('')
+    mergeServiceFiles()
+    manifest {
+        attributes 'Main-Class': 'com.smartbros.ServerGUI'
+    }
+
+}
+task createRuntimeImage(type: Exec) {
+    dependsOn 'shadowJar'
+    def outputDir = file("${buildDir}/runtime")
+    doFirst {
+        delete outputDir
+    }
+
+    commandLine 'jlink', '--no-header-files', '--no-man-pages', '--compress=2', '--strip-debug',
+            '--add-modules', 'java.base,java.desktop,java.net.http,javafx.controls,javafx.fxml,javafx.swing',
+            '--output', outputDir,
+            '--module-path', "/home/j/Music/javafx-sdk-17/lib",
+            '--launcher', "YourAppName=com.smartbros.ServerGUI"
 }
