@@ -3,7 +3,6 @@ plugins {
     id 'application'
     id 'org.javamodularity.moduleplugin' version '1.8.12'
     id 'org.openjfx.javafxplugin' version '0.0.13'
-    id 'org.beryx.jlink' version '2.25.0'
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("io.micronaut.application") version "3.7.9"
     id("io.micronaut.aot") version "3.7.9"
@@ -28,9 +27,9 @@ dependencies {
     implementation 'com.google.zxing:javase:3.4.1'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
-    implementation 'org.openjfx:javafx-controls:17'
-    implementation 'org.openjfx:javafx-fxml:17'
-    implementation 'org.openjfx:javafx-swing:17'
+    implementation 'org.openjfx:javafx-controls:20'
+    implementation 'org.openjfx:javafx-fxml:20'
+    implementation 'org.openjfx:javafx-swing:20'
     implementation 'org.controlsfx:controlsfx:11.1.2'
     implementation 'org.kordamp.ikonli:ikonli-javafx:12.3.1'
     implementation 'org.kordamp.bootstrapfx:bootstrapfx-core:0.4.0'
@@ -40,8 +39,8 @@ dependencies {
 
 //application { mainClass.set("com.smartbros.Application") }
 java {
-    sourceCompatibility = JavaVersion.toVersion("17")
-    targetCompatibility = JavaVersion.toVersion("17")
+    sourceCompatibility = JavaVersion.toVersion("20")
+    targetCompatibility = JavaVersion.toVersion("20")
 }
 graalvmNative.toolchainDetection = false
 micronaut {
@@ -70,7 +69,7 @@ configurations.all {
     }
 }
 javafx {
-    version = '17'
+    version = '20'
     modules = ['javafx.controls', 'javafx.fxml',  'javafx.swing' ]
 }
 application {
@@ -91,16 +90,32 @@ shadowJar {
     }
 
 }
-task createRuntimeImage(type: Exec) {
-    dependsOn 'shadowJar'
-    def outputDir = file("${buildDir}/runtime")
-    doFirst {
-        delete outputDir
-    }
+/*
 
-    commandLine 'jlink', '--no-header-files', '--no-man-pages', '--compress=2', '--strip-debug',
-            '--add-modules', 'java.base,java.desktop,java.net.http,javafx.controls,javafx.fxml,javafx.swing',
-            '--output', outputDir,
-            '--module-path', "/home/j/Music/javafx-sdk-17/lib",
-            '--launcher', "YourAppName=com.smartbros.ServerGUI"
-}
+$ ./gradlew shadowJar                                                                                        
+
+$ java  \
+--module-path ~/Downloads/javafx-sdk-20.0.1/lib  \
+--add-modules javafx.swing,javafx.controls,javafx.fxml \
+-jar build/libs/YourAppName-0.1.0.jar
+
+$ cp build/libs/YourAppName-0.1.0.jar input
+
+#first a few from javafx
+$ jlink \                                                                                                    
+--module-path  ~/Downloads/javafx-sdk-20.0.1/lib/ \            
+--add-modules  javafx.swing,javafx.controls,javafx.fxml \
+--output runtimewjavafx 
+
+#then  add all jre mods
+$ jlink \                                                                                                    
+--module-path runtimewjavafx:$JAVA_HOME/jmods \                       
+--add-modules ALL-MODULE-PATH \                                     
+--output runtime-jre
+
+
+$ jpackage --type dmg --input input --main-jar YourAppName-0.1.0.jar --main-class com.smartbros.Application \
+--name YourAppName --java-options "--module-path  runtime-jre \
+--add-modules ALL-MODULE-PATH" --runtime-image runtime --dest output
+
+*/
